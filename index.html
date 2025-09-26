@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bancommit - Cajero Automático 🏧</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Pantalla de Inicio (Login y Registro) -->
+        <div id="loginScreen" class="screen active">
+            <div class="header">
+                <h1>Bancommit 🏧</h1>
+                <p>Bienvenido a su banco digital seguro</p>
+            </div>
+            <form id="loginForm" class="form">
+                <div class="input-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Iniciar Sesión</button>
+                <p class="switch-link">¿Nuevo usuario? <a href="#" id="showRegister">Regístrate aquí</a></p>
+                <div id="loginAttempts" class="error hidden"></div>
+            </form>
+        </div>
+
+        <!-- Pantalla de Registro -->
+        <div id="registerScreen" class="screen hidden">
+            <div class="header">
+                <h1>Registro en Bancommit 🏧</h1>
+                <p>Cree su cuenta gratuita</p>
+            </div>
+            <form id="registerForm" class="form">
+                <div class="input-group">
+                    <label for="regNombre">Nombre:</label>
+                    <input type="text" id="regNombre" required>
+                </div>
+                <div class="input-group">
+                    <label for="regApellido">Apellido:</label>
+                    <input type="text" id="regApellido" required>
+                </div>
+                <div class="input-group">
+                    <label for="regDireccion">Dirección:</label>
+                    <input type="text" id="regDireccion" required>
+                </div>
+                <div class="input-group">
+                    <label for="regIdentificacion">Número de Identificación:</label>
+                    <input type="text" id="regIdentificacion" required>
+                </div>
+                <div class="input-group">
+                    <label for="regUsuario">Usuario:</label>
+                    <input type="text" id="regUsuario" required>
+                </div>
+                <div class="input-group">
+                    <label for="regPassword">Contraseña:</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <button type="submit">Registrarse</button>
+                <p class="switch-link">¿Ya tienes cuenta? <a href="#" id="showLogin">Inicia sesión aquí</a></p>
+                <div id="registerError" class="error hidden"></div>
+            </form>
+        </div>
+
+        <!-- Pantalla de Transacciones -->
+        <div id="transactionsScreen" class="screen hidden">
+            <div class="header">
+                <h1>Bancommit 🏧 - Panel de Transacciones</h1>
+                <p>Bienvenido, <span id="userName"></span></p>
+                <button id="logoutBtn" class="btn-secondary">Cerrar Sesión</button>
+            </div>
+            <div class="profile-section">
+                <h3>Perfil</h3>
+                <p><strong>Nombre:</strong> <span id="profileNombre"></span></p>
+                <p><strong>Dirección:</strong> <span id="profileDireccion"></span></p>
+                <button id="editProfileBtn">Editar Perfil</button>
+            </div>
+            <div class="accounts-section">
+                <h3>Cuentas</h3>
+                <div id="accountsList"></div>
+            </div>
+            <div class="operations-section">
+                <h3>Operaciones</h3>
+                <button id="depositBtn" class="operation-btn">Depositar</button>
+                <button id="withdrawBtn" class="operation-btn">Retirar</button>
+                <button id="balanceBtn" class="operation-btn">Consultar Saldo</button>
+                <button id="historyBtn" class="operation-btn">Consultar Movimientos</button>
+                <button id="transferBtn" class="operation-btn">Transferir</button>
+            </div>
+            <div id="operationModal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <div id="modalBody"></div>
+                </div>
+            </div>
+            <div id="resultModal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3 id="resultTitle"></h3>
+                    <p id="resultMessage"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de Edición de Perfil -->
+        <div id="editProfileScreen" class="screen hidden">
+            <div class="header">
+                <h1>Editar Perfil - Bancommit 🏧</h1>
+            </div>
+            <form id="editProfileForm" class="form">
+                <div class="input-group">
+                    <label for="editNombre">Nombre:</label>
+                    <input type="text" id="editNombre" required>
+                </div>
+                <div class="input-group">
+                    <label for="editApellido">Apellido:</label>
+                    <input type="text" id="editApellido" required>
+                </div>
+                <div class="input-group">
+                    <label for="editDireccion">Dirección:</label>
+                    <input type="text" id="editDireccion" required>
+                </div>
+                <button type="submit">Guardar Cambios</button>
+                <button type="button" id="cancelEdit">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js.js"></script>
+</body>
+</html>
