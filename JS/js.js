@@ -1,5 +1,3 @@
-// script.js
-
 // Clase base Cuenta
 class Cuenta {
     constructor(numeroCuenta, saldoInicial = 0) {
