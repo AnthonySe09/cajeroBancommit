@@ -1,9 +1,13 @@
-// Clase base Cuenta
+// =======================================
+// CLASES PARA LA LÓGICA DE CUENTAS Y CLIENTES
+// =======================================
+
+// Clase base Cuenta: representa una cuenta bancaria genérica
 class Cuenta {
     constructor(numeroCuenta, saldoInicial = 0) {
-        this.numeroCuenta = numeroCuenta;
-        this.saldo = saldoInicial;
-        this.movimientos = []; // Historial de transacciones
+        this.numeroCuenta = numeroCuenta;       // identificador de cuenta
+        this.saldo = saldoInicial;               // saldo actual
+        this.movimientos = [];                   // historial de operaciones
     }
 
     consultarSaldo() {
@@ -13,17 +17,25 @@ class Cuenta {
     realizarDeposito(monto) {
         if (monto > 0) {
             this.saldo += monto;
-            this.movimientos.push({ tipo: 'Depósito', monto, fecha: new Date().toLocaleString() });
+            this.movimientos.push({
+                tipo: 'Depósito',
+                monto,
+                fecha: new Date().toLocaleString()
+            });
             return true;
         }
         return false;
     }
 
     realizarRetiro(monto) {
-        // Implementación base: no permite sobregiro
+        // implementación base: no permite sobregiro
         if (monto > 0 && monto <= this.saldo) {
             this.saldo -= monto;
-            this.movimientos.push({ tipo: 'Retiro', monto, fecha: new Date().toLocaleString() });
+            this.movimientos.push({
+                tipo: 'Retiro',
+                monto,
+                fecha: new Date().toLocaleString()
+            });
             return true;
         }
         return false;
@@ -34,46 +46,55 @@ class Cuenta {
     }
 }
 
-// Clase CuentaAhorros hereda de Cuenta
+// Clase CuentaAhorros: hereda de Cuenta, igual lógica de retiro que la base
 class CuentaAhorros extends Cuenta {
     constructor(numeroCuenta, saldoInicial = 0) {
         super(numeroCuenta, saldoInicial);
     }
 
-    // Sobrescribe realizarRetiro: no permite sobregiros
+    // opcional: sobrescribir retirar con misma lógica (no sobregiro)
     realizarRetiro(monto) {
         if (monto > 0 && monto <= this.saldo) {
             this.saldo -= monto;
-            this.movimientos.push({ tipo: 'Retiro', monto, fecha: new Date().toLocaleString() });
+            this.movimientos.push({
+                tipo: 'Retiro',
+                monto,
+                fecha: new Date().toLocaleString()
+            });
             return true;
         }
         return false;
     }
 }
 
-// Clase CuentaCorriente hereda de Cuenta
+// Clase CuentaCorriente: permite sobregiro hasta un límite
 class CuentaCorriente extends Cuenta {
     constructor(numeroCuenta, saldoInicial = 0) {
         super(numeroCuenta, saldoInicial);
-        this.limiteSobregiro = 500000;
+        this.limiteSobregiro = 500000;  // monto máximo de sobregiro permitido
     }
 
-    // Sobrescribe realizarRetiro: permite sobregiro hasta 500000
     realizarRetiro(monto) {
+        // permite que saldo llegue a negativo hasta -limiteSobregiro
         if (monto > 0 && (this.saldo - monto) >= -this.limiteSobregiro) {
             this.saldo -= monto;
-            this.movimientos.push({ tipo: 'Retiro', monto, fecha: new Date().toLocaleString() });
+            this.movimientos.push({
+                tipo: 'Retiro',
+                monto,
+                fecha: new Date().toLocaleString()
+            });
             return true;
         }
         return false;
     }
 
     consultarSaldo() {
-        return this.saldo; // Puede ser negativo hasta el límite
+        // Puede devolver saldo negativo si hay sobregiro
+        return this.saldo;
     }
 }
 
-// Clase Cliente
+// Clase Cliente: representa un usuario con sus datos y sus cuentas
 class Cliente {
     constructor(nombre, apellido, direccion, numeroIdentificacion, usuario, contrasena) {
         this.nombre = nombre;
@@ -82,8 +103,10 @@ class Cliente {
         this.numeroIdentificacion = numeroIdentificacion;
         this.usuario = usuario;
         this.contrasena = contrasena;
+
+        // Se crean dos cuentas: ahorros y corriente
         this.cuentas = {
-            ahorros: new CuentaAhorros(`AH${Date.now()}`), // Número único
+            ahorros: new CuentaAhorros(`AH${Date.now()}`),
             corriente: new CuentaCorriente(`CC${Date.now()}`)
         };
     }
@@ -105,6 +128,7 @@ class Cliente {
     }
 
     transferir(monto, tipoOrigen, tipoDestino) {
+        // intenta retirar de la cuenta origen; si tiene éxito, deposita en la cuenta destino
         if (this.realizarRetiro(monto, tipoOrigen)) {
             this.realizarDeposito(monto, tipoDestino);
             return true;
@@ -119,23 +143,34 @@ class Cliente {
     }
 }
 
-// Simulación de base de datos en memoria
-let clientes = [];
-let clienteActual = null;
+// =======================================
+// VARIABLES GLOBALES (simulación de base de datos local)
+// =======================================
+
+let clientes = [];           // lista de clientes registrados
+let clienteActual = null;    // cliente que ha iniciado sesión
 let intentosLogin = 0;
 const MAX_INTENTOS = 3;
 
-// Inicialización
+// =======================================
+// INICIALIZACIÓN Y EVENTOS AL CARGAR LA PÁGINA
+// =======================================
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Cargar clientes de ejemplo (opcional, para testing)
+    // Si no hay clientes, se agrega uno de prueba
     if (clientes.length === 0) {
-        const clienteEjemplo = new Cliente('Juan', 'Pérez', 'Calle 123', '123456789', 'juanp', 'password123');
+        const clienteEjemplo = new Cliente(
+            'Juan', 'Pérez',
+            'Calle 123', '123456789',
+            'juanp', 'password123'
+        );
+        // Hacer algunos depósitos iniciales
         clienteEjemplo.cuentas.ahorros.realizarDeposito(1000000);
         clienteEjemplo.cuentas.corriente.realizarDeposito(500000);
         clientes.push(clienteEjemplo);
     }
 
-    // Event Listeners
+    // Asignar manejadores de eventos a formularios y botones de UI
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
     document.getElementById('registerForm').addEventListener('submit', handleRegister);
     document.getElementById('showRegister').addEventListener('click', showRegister);
@@ -145,15 +180,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('editProfileForm').addEventListener('submit', handleEditProfile);
     document.getElementById('cancelEdit').addEventListener('click', cancelEdit);
 
-    // Botones de operaciones (se configuran después del login)
+    // Botones de operaciones bancarias
     document.getElementById('depositBtn').addEventListener('click', () => showOperationModal('deposit'));
     document.getElementById('withdrawBtn').addEventListener('click', () => showOperationModal('withdraw'));
     document.getElementById('balanceBtn').addEventListener('click', () => showOperationModal('balance'));
     document.getElementById('historyBtn').addEventListener('click', () => showOperationModal('history'));
     document.getElementById('transferBtn').addEventListener('click', () => showOperationModal('transfer'));
 
-    // Modal closes
-    document.querySelectorAll('.close').forEach(close => close.addEventListener('click', closeModal));
+    // Cerrar modal: al hacer clic en elementos con clase 'close'
+    document.querySelectorAll('.close').forEach(close =>
+        close.addEventListener('click', closeModal)
+    );
+    // También cerrar modal si se hace clic fuera del contenido (sobre el fondo del modal)
     window.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal')) {
             closeModal();
@@ -161,21 +199,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Funciones de UI
+// =======================================
+// FUNCIONES DE INTERFAZ / UI
+// =======================================
+
 function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active', 'hidden'));
+    // Oculta todas las secciones (pantallas) quitándoles clases visuales
+    document.querySelectorAll('.screen').forEach(screen =>
+        screen.classList.remove('active', 'hidden')
+    );
+    // Agrega clase 'active' a la sección que queremos mostrar
     document.getElementById(screenId).classList.add('active');
 }
 
 function showRegister(e) {
-    e.preventDefault();
+    e.preventDefault(); // prevenir comportamiento por defecto (por ejemplo, recargar la página)
     showScreen('registerScreen');
 }
 
 function showLogin(e) {
     e.preventDefault();
     showScreen('loginScreen');
-    intentosLogin = 0; // Reset intentos
+    intentosLogin = 0;
     document.getElementById('loginAttempts').classList.add('hidden');
 }
 
@@ -188,15 +233,10 @@ function showTransactions() {
 }
 
 function updateAccountsList() {
-    const list = document.getElement}
-    // script.js (continuación desde donde se cortó)
-
-// Función para actualizar la lista de cuentas
-function updateAccountsList() {
     const list = document.getElementById('accountsList');
-    list.innerHTML = '';
-    
-    // Cuenta Ahorros
+    list.innerHTML = ''; // limpia el contenido previo
+
+    // Cuenta de Ahorros
     const saldoAhorros = clienteActual.consultarSaldo('ahorros');
     const itemAhorros = document.createElement('div');
     itemAhorros.className = 'account-item';
@@ -205,7 +245,7 @@ function updateAccountsList() {
         <p>Saldo: $${saldoAhorros.toLocaleString('es-CO')}</p>
     `;
     list.appendChild(itemAhorros);
-    
+
     // Cuenta Corriente
     const saldoCorriente = clienteActual.consultarSaldo('corriente');
     const itemCorriente = document.createElement('div');
@@ -217,7 +257,6 @@ function updateAccountsList() {
     list.appendChild(itemCorriente);
 }
 
-// Manejo de Login
 function handleLogin(e) {
     e.preventDefault();
     const username = document.getElementById('username').value;
@@ -241,13 +280,12 @@ function handleLogin(e) {
         attemptsDiv.classList.remove('hidden');
         if (intentosLogin >= MAX_INTENTOS) {
             setTimeout(() => {
-                showLogin(null); // Reset después de 30s o manual
+                showLogin(null);
             }, 30000);
         }
     }
 }
 
-// Manejo de Registro
 function handleRegister(e) {
     e.preventDefault();
     const nombre = document.getElementById('regNombre').value;
@@ -258,7 +296,6 @@ function handleRegister(e) {
     const contrasena = document.getElementById('regPassword').value;
     const errorDiv = document.getElementById('registerError');
 
-    // Validar si usuario ya existe
     if (clientes.find(c => c.usuario === usuario)) {
         errorDiv.textContent = 'El usuario ya existe. Elija otro.';
         errorDiv.classList.remove('hidden');
@@ -269,14 +306,13 @@ function handleRegister(e) {
     clientes.push(nuevoCliente);
     errorDiv.textContent = 'Registro exitoso. Puede iniciar sesión.';
     errorDiv.classList.remove('hidden');
-    errorDiv.style.color = 'green'; // Éxito
+    errorDiv.style.color = 'green';
     setTimeout(() => {
         showLogin(null);
         document.getElementById('registerForm').reset();
     }, 2000);
 }
 
-// Logout
 function logout() {
     clienteActual = null;
     showScreen('loginScreen');
@@ -284,7 +320,6 @@ function logout() {
     document.getElementById('loginAttempts').classList.add('hidden');
 }
 
-// Mostrar pantalla de edición de perfil
 function showEditProfile() {
     document.getElementById('editNombre').value = clienteActual.nombre;
     document.getElementById('editApellido').value = clienteActual.apellido;
@@ -292,7 +327,6 @@ function showEditProfile() {
     showScreen('editProfileScreen');
 }
 
-// Manejo de edición de perfil
 function handleEditProfile(e) {
     e.preventDefault();
     const nombre = document.getElementById('editNombre').value;
@@ -300,19 +334,18 @@ function handleEditProfile(e) {
     const direccion = document.getElementById('editDireccion').value;
 
     clienteActual.actualizarPerfil(nombre, apellido, direccion);
-    showTransactions(); // Regresar y actualizar UI
+    showTransactions(); // vuelve a la pantalla principal y actualiza los datos
 }
 
-// Cancelar edición
 function cancelEdit() {
     showTransactions();
 }
 
-// Mostrar modal de operación
+// Mostrar el modal de operación (depósito, retiro, consulta, historial o transferencia)
 function showOperationModal(operation) {
     const modal = document.getElementById('operationModal');
     const body = document.getElementById('modalBody');
-    body.innerHTML = '';
+    body.innerHTML = '';  // limpiar contenido previo
 
     let html = '';
     switch (operation) {
@@ -371,8 +404,8 @@ function showOperationModal(operation) {
             `;
             body.innerHTML = html;
             document.getElementById('closeBalance').addEventListener('click', closeModal);
-            showResultModal('Consulta de Saldo', html); // Usar result modal para info
-            return; // No abrir operation modal
+            showResultModal('Consulta de Saldo', html);
+            return;
 
         case 'history':
             const movimientosAhorros = clienteActual.consultarMovimientos('ahorros');
@@ -399,7 +432,7 @@ function showOperationModal(operation) {
                 ulCorriente.appendChild(li);
             });
             document.getElementById('closeHistory').addEventListener('click', closeModal);
-            showResultModal('Historial de Movimientos', body.innerHTML); // Mostrar en result
+            showResultModal('Historial de Movimientos', body.innerHTML);
             return;
 
         case 'transfer':
@@ -436,7 +469,6 @@ function showOperationModal(operation) {
     modal.classList.add('active');
 }
 
-// Manejo de Depósito
 function handleDeposit(e) {
     e.preventDefault();
     const monto = parseFloat(document.getElementById('depositAmount').value);
@@ -452,7 +484,6 @@ function handleDeposit(e) {
     document.getElementById('depositForm').reset();
 }
 
-// Manejo de Retiro
 function handleWithdraw(e) {
     e.preventDefault();
     const monto = parseFloat(document.getElementById('withdrawAmount').value);
@@ -468,7 +499,6 @@ function handleWithdraw(e) {
     document.getElementById('withdrawForm').reset();
 }
 
-// Manejo de Transferencia
 function handleTransfer(e) {
     e.preventDefault();
     const monto = parseFloat(document.getElementById('transferAmount').value);
@@ -485,7 +515,6 @@ function handleTransfer(e) {
     document.getElementById('transferForm').reset();
 }
 
-// Mostrar modal de resultado (para info y confirmaciones)
 function showResultModal(title, message) {
     document.getElementById('resultTitle').textContent = title;
     document.getElementById('resultMessage').innerHTML = message;
@@ -494,13 +523,14 @@ function showResultModal(title, message) {
     modal.classList.add('active');
 }
 
-// Cerrar modal
 function closeModal() {
-    document.getElementById('operationModal').classList.remove('active');
-    document.getElementById('operationModal').classList.add('hidden');
-    document.getElementById('resultModal').classList.remove('active');
-    document.getElementById('resultModal').classList.add('hidden');
-    // Limpiar formularios si es necesario
-    const forms = document.querySelectorAll('#operationModal form');
+    const opModal = document.getElementById('operationModal');
+    const resModal = document.getElementById('resultModal');
+    opModal.classList.remove('active');
+    opModal.classList.add('hidden');
+    resModal.classList.remove('active');
+    resModal.classList.add('hidden');
+    // Limpiar formularios dentro del modal de operación si existen
+    const forms = opModal.querySelectorAll('form');
     forms.forEach(form => form.reset());
 }
